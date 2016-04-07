@@ -15,7 +15,7 @@ class HangmanSpec extends FunSpec {
       hangman.problem should be(problem)
     }
 
-    it("should be initialiazed") {
+    it("at initial") {
       expect(word = "APPLE", length = 5, problem = "A___E")
       expect(word = "GOOGLE",length = 6, problem = "_OO__E")
       expect(word = "AEIOU", length = 5, problem = "AEIOU")
