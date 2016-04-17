@@ -3,56 +3,46 @@ package cn.codingstyle.hangman
 import spock.lang.Specification
 
 class HangmanSpec extends Specification {
-  def "start game"() {
+  def "at initial"() {
     when:
     Hangman hangman = new Hangman(start)
 
     then:
-    hangman.tries() == tries
-    hangman.used() == used
     hangman.length() == length
     hangman.problem() == problem
 
     where:
-    start     | tries | used     | length | problem
-    "APPLE"   | 12    | "AEIOU"  | 5      | "A___E"
-    "GOOGLE"  | 12    | "AEIOU"  | 6      | "_OO__E"
-    ""        | 12    | "AEIOU"  | 0      | ""
-    "AEIOU"   | 12    | "AEIOU"  | 5      | "AEIOU"
+    start    | length | problem
+    "APPLE"  | 5      | "A___E"
+    "GOOGLE" | 6      | "_OO__E"
+    ""       | 0      | ""
+    "AEIOU"  | 5      | "AEIOU"
   }
 
-  def "play game"() {
+  def "hangman game"() {
     given:
     Hangman hangman = new Hangman("APPLE")
 
     when:
-    Hangman newHangman = hangman.tryChar(ch as char)
+    chars.each { hangman = hangman.tryChar(it as char) }
 
     then:
-    newHangman.tries() == tries
-    newHangman.used() == used
-    newHangman.problem() == problem
+    hangman.tries() == tries
+    hangman.used() == used
+    hangman.problem() == problem
 
-    where:
-    ch  | tries | used      | problem
-    'P' | 12    | "AEIOUP"  | "APP_E"
-    'K' | 11    | "AEIOUK"  | "A___E"
-  }
-
-  def "final result"() {
-    given:
-    Hangman hangman = new Hangman("APPLE")
-
-    when:
-    tries.each { hangman = hangman.tryChar(it as char) }
-
-    then:
     hangman.won() == won
     hangman.lost() == lost
 
     where:
-    tries          | won   | lost
-    "KKKKKKKKKKKK" | false | true
-    "PL"           | true  | false
+    chars          | tries | used      | problem   | won   | lost
+    "A"            | 11    | "AEIOU"   | "A___E"   | false | false
+    "AA"           | 10    | "AEIOU"   | "A___E"   | false | false
+    "P"            | 12    | "AEIOUP"  | "APP_E"   | false | false
+    "PP"           | 11    | "AEIOUP"  | "APP_E"   | false | false
+    "K"            | 11    | "AEIOUK"  | "A___E"   | false | false
+    "KK"           | 10    | "AEIOUK"  | "A___E"   | false | false
+    "PL"           | 12    | "AEIOUPL" | "APPLE"   | true  | false
+    "KKKKKKKKKKKK" | 0     | "AEIOUK"  | "A___E"   | false | true
   }
 }

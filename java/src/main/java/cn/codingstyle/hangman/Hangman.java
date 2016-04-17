@@ -1,12 +1,14 @@
 package cn.codingstyle.hangman;
 
-import static cn.codingstyle.hangman.Strings.contains;
-import static cn.codingstyle.hangman.Strings.map;
+import static java.util.stream.Collectors.joining;
 
-public class Hangman {
+public final class Hangman {
+  private static final String ALL_VOWELS = "AEIOU";
+  private static final int MAX_TRIES = 12;
+
   private String solution;
-  private String used = "AEIOU";
-  private int tries = 12;
+  private String used = ALL_VOWELS;
+  private int tries = MAX_TRIES;
 
   public Hangman(String solution) {
     this.solution = solution;
@@ -23,11 +25,23 @@ public class Hangman {
   }
 
   private String newUsed(char ch) {
-    return used + ch;
+    return !isCharUsed(ch) ? used + ch : used;
   }
 
   private int newTries(char ch) {
-    return contains(solution, ch) ? tries : tries - 1;
+    return tryFailed(ch) ? tries - 1 : tries;
+  }
+
+  private boolean tryFailed(char ch) {
+    return isCharUsed(ch) || !isCharContained(ch);
+  }
+
+  private boolean isCharUsed(char ch) {
+    return used.indexOf(ch) != -1;
+  }
+
+  private boolean isCharContained(char ch) {
+    return solution.indexOf(ch) != -1;
   }
 
   public String used() {
@@ -35,7 +49,13 @@ public class Hangman {
   }
 
   public String problem() {
-    return map(solution, ch -> contains(used, ch) ? ch : '_');
+    return solution.chars()
+      .mapToObj(ch -> mask((char)ch))
+      .collect(joining());
+  }
+
+  private String mask(char ch) {
+    return isCharUsed(ch) ? String.valueOf(ch) : "_";
   }
 
   public int tries() {

@@ -1,63 +1,54 @@
 package cn.codingstyle.hangman
 
 import org.scalatest._
+import org.scalatest.prop._
 import org.scalatest.Matchers._
 
-class HangmanSpec extends FunSpec {
-  describe("start game") {
-    def expect(word: String, length: Int, problem: String) {
-      val hangman = new Hangman(word)
+class HangmanSpec extends FunSpec with TableDrivenPropertyChecks {
+  describe("at initial") {
+    val attemps = Table(
+      ("word", "length", "problem"),
+      ("APPLE", 5, "A___E"),
+      ("GOOGLE",6, "_OO__E"),
+      ("AEIOU", 5, "AEIOU"),
+      ("",      0, "")
+    )
 
-      hangman.tries should be(12)
-      hangman.used should be("AEIOU")
-
+    forAll(attemps) { (word, length, problem) =>
+      val hangman = Hangman(word)
       hangman.length should be(length)
       hangman.problem should be(problem)
     }
-
-    it("at initial") {
-      expect(word = "APPLE", length = 5, problem = "A___E")
-      expect(word = "GOOGLE",length = 6, problem = "_OO__E")
-      expect(word = "AEIOU", length = 5, problem = "AEIOU")
-      expect(word = "",      length = 0, problem = "")
-    }
   }
 
-  describe("play game") {
-    val hangman = new Hangman("APPLE");
+  describe("hangman game for APPLE") {
+    val attemps = Table(
+      ("chars",        "tries",  "used",    "problem", "won", "lost"),
+      ("A",            11,       "AEIOU",   "A___E",   false, false),
+      ("AA",           10,       "AEIOU",   "A___E",   false, false),
+      ("P",            12,       "AEIOUP",  "APP_E",   false, false),
+      ("PP",           11,       "AEIOUP",  "APP_E",   false, false),
+      ("K",            11,       "AEIOUK",  "A___E",   false, false),
+      ("KK",           10,       "AEIOUK",  "A___E",   false, false),
+      ("PL",           12,       "AEIOUPL", "APPLE",   true,  false),
+      ("KKKKKKKKKKKK", 0,        "AEIOUK",  "A___E",   false, true)
+    )
 
-    it("guess success") {
-      val newHangman = hangman.tryChar('P')
+    forAll(attemps) {(chars, tries, used, problem, won, lost) =>
+      var hangman = Hangman("APPLE")
 
-      newHangman.tries should be(12)
-      newHangman.used should be("AEIOUP")
-      newHangman.problem should be("APP_E")
-    }
+      def tryChars(chars: String) {
+        chars.foreach(c => hangman = hangman.tryChar(c))
+      }
 
-    it("guess fail") {
-      val newHangman = hangman.tryChar('K')
+      tryChars(chars)
 
-      newHangman.tries should be(11)
-      newHangman.used should be("AEIOUK")
-      newHangman.problem should be("A___E")
-    }
-  }
+      hangman.tries should be(tries)
+      hangman.used should be(used)
+      hangman.problem should be(problem)
 
-  describe("final result") {
-    var hangman = new Hangman("APPLE");
-
-    def tryChars(chars: String) {
-      chars.foreach(c => hangman = hangman.tryChar(c))
-    }
-
-    it("won") {
-      tryChars("PL")
-      hangman.won should be(true)
-    }
-
-    it("loss") {
-      tryChars("KKKKKKKKKKKK")
-      hangman.lost should be(true)
+      hangman.won should be(won)
+      hangman.lost should be(lost)
     }
   }
 }

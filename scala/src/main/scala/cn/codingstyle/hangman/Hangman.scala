@@ -15,8 +15,14 @@ case class Hangman
   }
 
   def tryChar(c: Char): Hangman =
-    copy(used = used + c, tries = newTries(c))
+    copy(used = newUsed(c), tries = newTries(c))
+
+  private def newUsed(c: Char): String =
+    if (!used.contains(c)) used + c else used
 
   private def newTries(c: Char): Int =
-    if (solution.contains(c)) tries else tries - 1
+    if (tryFailed(c)) tries - 1 else tries
+
+  private def tryFailed(c: Char): Boolean = 
+    used.contains(c) || !solution.contains(c)
 }
